@@ -8,6 +8,9 @@ function Track() {
 	this.startingTime = 0;
 	this.data = null;
 	this.artistId = "";
+	this.audioSummary = null;
+	this.spotifyArtistId;
+	this.spotifyTrackId;
 }
 
 var currentTrack = new Track();
@@ -16,9 +19,9 @@ var nextTrack = new Track();
 
 ////////////////////////////////////////////////
 // callbacks 
-function loadInTrackData(data) {
+function loadInTrackData(track, data) {
 	console.log("done callback");
-	currentTrack.data = data;
+	track.data = data;
 }
 
 function finishedLoadingStart(buffer) {
@@ -43,12 +46,14 @@ function finishedLoadingStart(buffer) {
 		$("body").css("background-color", "#000");
 		currentTrack.data.beats.forEach(function(e) {
 			if(Math.abs(trackTime - e.start) < 0.1) {
-				$("body").css("background-color", "#fff");
+				// $("body").css("background-color", "#fff");
 			}
 		});
 	}, 20);
 	
 }
+
+
 
 // search function for starting song
 
@@ -67,7 +72,9 @@ $("#searchButton").click(function() {
 			var artistId = items[i].artists[0].id;
 			var track = items[i].name;
 			// console.log(item[i]);
-			$("#searchResults ul").append("<li class='searchResultItem' id='"+items[i].id+"' preview='"+items[i].preview_url+"'>" + artist + ": " + track + "</li>");
+			$("#searchResults ul").append("<li class='searchResultItem' id='" 
+			+ items[i].id + "' preview='" + items[i].preview_url + "' artistId='" 
+			+ artistId + "'>" + artist + ": " + track + "</li>");
 		}
 		
 		
@@ -75,9 +82,18 @@ $("#searchButton").click(function() {
 		$(".searchResultItem").click(function() {
 			console.log($(this).attr("preview"));
 			
-			$(this).attr("preview")
+			var that = this;
+			getPreviewData($(this).attr("preview"), function(audioSummary, data) {
+				console.log("done callback");
+				currentTrack.data = data;
+				currentTrack.audioSummary = audioSummary;
+				
+				currentTrack.spotifyTrackId = $(that).attr("id");
+				currentTrack.spotifyArtistId = $(that).attr("artistId");			
+				getSimilarArtists(currentTrack);
+			});
+
 			
-			getPreviewData($(this).attr("preview"), loadInTrackData);
 			
 			if(startingSource) startingSource.stop();
 			
@@ -98,4 +114,5 @@ $("#stopButton").click(function(){
 	startingSource.playbackRate.value = 0;
 	console.log(startingSource);
 	clearInterval(bpmIntverval);
+	console.log(currentTrack.audioSummary);
 });
