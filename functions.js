@@ -46,9 +46,11 @@ function getPreviewData(previewURL, callback) {
 				else {
 					console.log("still waiting...");
 					console.log(trackData);
+					
+					
 				}
 			});
-		}, 1000);		
+		}, 3000);		
 	});
 }
 
@@ -58,31 +60,60 @@ function getSimilarArtists(track) {
 		if(data.artists.length > 0) {
 			var uri = data.artists[0].uri;
 			var name = data.artists[0].name;			
-			var tempoTreshold = 0.1;
+			var tempoThreshold = 0.1;
 			
 			console.log("track.audioSummary");
 			console.log(track.audioSummary);
-			var NUM_RESULTS = 1;
+			var NUM_RESULTS = 10;
 			
-			$.get("http://developer.echonest.com/api/v4/song/search", {
-				api_key: APIkey,
-				format: "json",
-				results: NUM_RESULTS,
-				artist: name,
-				min_tempo: Math.round(track.audioSummary.tempo) - tempoTreshold,
-				max_tempo: Math.round(track.audioSummary.tempo) + tempoTreshold,
+			var searchUrl = "http://developer.echonest.com/api/v4/song/search?api_key="+APIkey+
+			"&format=json&results=10&artist="+encodeURI(name) +
+			"&min_tempo=" + (Math.round(track.audioSummary.tempo) - tempoThreshold) +
+			"&max_tempo=" + (Math.round(track.audioSummary.tempo) + tempoThreshold);
+
+			console.log("searchUrl = " + searchUrl);
+			
+			$.get(searchUrl, {
+			// $.get("http://developer.echonest.com/api/v4/song/search", {
+			// 	api_key: APIkey,
+			// 	format: "json",
+			// 	results: NUM_RESULTS,
+			// 	artist: encodeURI(name),
+			// 	min_tempo: Math.round(track.audioSummary.tempo) - tempoThreshold,
+			// 	max_tempo: Math.round(track.audioSummary.tempo) + tempoThreshold,
 			}).done(function(searchData) {
+				
 				console.log("searchData");
 				console.log(searchData);
+				
 				if(searchData.response.songs.length > 0) {
 					// var searchData.response.songs[0].
 					var firstSong = searchData.response.songs[0];
-					$.get("https://api.spotify.com/v1/search?q=Night%20Like%20This%20Dyro+artist:Laidback%20Luke&type=track", {
-						q: firstSong.title + "+artist:" + firstSong.artist_name,
-						type: "track"
-					}).done(function(searchData){
-						console.log("searchData");
-						console.log(searchData);
+					var query  = encodeURI(firstSong.title + "+artist:" + firstSong.artist_name);
+					console.log("query = " + query);
+					$.get("https://api.spotify.com/v1/search?q=" + query + "&type=track", {
+					// $.get("https://api.spotify.com/v1/search", {
+					// 	q: query,
+					// 	type: "track"
+					}).done(function(spotifySearchData){
+						console.log("spotifySearchData");
+						console.log(spotifySearchData);
+						
+						var url = spotifySearchData.tracks.items[0].preview_url;
+						var spotifyTrackId = spotifySearchData.tracks.items[0].id;
+						var spotifyArtistId = spotifySearchData.tracks.items[0].artists[0].id;
+						
+						getPreviewData(url, function(audioSummary, data) {
+							console.log("done callback");
+							nextTrack.data = data;
+							nextTrack.audioSummary = audioSummary;
+							nextTrack.spotifyTrackId = spotifyTrackId;
+							nextTrack.spotifyArtistId = spotifyArtistId;
+							
+							console.log("WE HAVE TWO TRACKS!!!!");
+							// getSimilarArtists(nextTrack);
+						});
+						
 					});
 				}
 				

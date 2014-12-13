@@ -43,7 +43,7 @@ function finishedLoadingStart(buffer) {
 		
 		var trackTime = context.currentTime-currentTrack.startingTime;
 		
-		$("body").css("background-color", "#000");
+		// $("body").css("background-color", "#000");
 		currentTrack.data.beats.forEach(function(e) {
 			if(Math.abs(trackTime - e.start) < 0.1) {
 				// $("body").css("background-color", "#fff");
@@ -116,3 +116,9 @@ $("#stopButton").click(function(){
 	clearInterval(bpmIntverval);
 	console.log(currentTrack.audioSummary);
 });
+
+$("#search").keydown(function(event) {
+	if(event.keyCode == 13) {
+		$("#searchButton").click();
+	}
+})
