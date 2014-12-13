@@ -81,12 +81,7 @@ $("#searchButton").click(function() {
 			
 			if(startingSource) startingSource.stop();
 			
-		    bufferLoader = new BufferLoader(
-		      context,
-		      [],
-		      finishedLoadingStart
-		      );
-
+		    bufferLoader = new BufferLoader(context, finishedLoadingStart);
 		    bufferLoader.load( $(this).attr("preview"));
 			
 		});
