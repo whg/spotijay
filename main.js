@@ -1,46 +1,40 @@
 
-window.onload = init;
-var context;
+var context = new webkitAudioContext();
 var bufferLoader;
 var startingSource = null;
 var bpmIntverval = null;
 
-var currentTrack = {
-	startingTime: 0,
-	data: null,
-	artistId: ""
-};
+function Track() {
+	this.startingTime = 0;
+	this.data = null;
+	this.artistId = "";
+}
 
-$("#stopButton").click(function(){
-	// startingSource.stop();
-	startingSource.playbackRate.value = 0;
-	console.log(startingSource);
-	clearInterval(bpmIntverval);
-});
+var currentTrack = new Track();
+var nextTrack = new Track();
 
-// var currentTrackSta
-// var currentTrackData = null;
 
+////////////////////////////////////////////////
+// callbacks 
 function loadInTrackData(data) {
 	console.log("done callback");
 	currentTrack.data = data;
 }
 
-function init() {
-  context = new webkitAudioContext();
-
-}
-
 function finishedLoadingStart(buffer) {
+
 	startingSource = context.createBufferSource();
 	startingSource.buffer = buffer;
     startingSource.connect(context.destination);
     startingSource.start(0);
 	startingSource.playbackRate = 1;
 	currentTrack.startingTime = context.currentTime;
-	console.log(context.currentTime);
-	console.log(startingSource);
+
 	
+	///////////////////////////////////////////////////////////
+	// this is where the meat of the bpm shit lives
+	///////////////////////////////////////////////////////////
+
 	bpmIntverval = setInterval(function () {
 		if(!currentTrack.data || startingSource.playbackRate === 0) return;
 		
@@ -51,33 +45,12 @@ function finishedLoadingStart(buffer) {
 			if(Math.abs(trackTime - e.start) < 0.1) {
 				$("body").css("background-color", "#fff");
 			}
-			
-			// console.log(trackTime +" "+ e.start);
 		});
 	}, 20);
 	
-	// console.log("started song");
 }
 
-function finishedLoading(bufferList) {
-  // Create two sources and play them both together.
-  source1 = context.createBufferSource();
-  // var source2 = context.createBufferSource();
-  source1.buffer = bufferList[0];
-  // source2.buffer = bufferList[1];
-
-  source1.connect(context.destination);
-  // source2.connect(context.destination);
-  source1.start(0);
-  // source2.start(0);
-  
-  // setInterval(function() {
-  // 	  console.log(context.currentTime);
-  // }, 200);
-  
- 
-}
-
+// search function for starting song
 
 $("#searchButton").click(function() {
 	console.log("searching " + $("#search").val());
@@ -97,6 +70,8 @@ $("#searchButton").click(function() {
 			$("#searchResults ul").append("<li class='searchResultItem' id='"+items[i].id+"' preview='"+items[i].preview_url+"'>" + artist + ": " + track + "</li>");
 		}
 		
+		
+		//events for each result item
 		$(".searchResultItem").click(function() {
 			console.log($(this).attr("preview"));
 			
@@ -118,4 +93,14 @@ $("#searchButton").click(function() {
 		
 	});
 	
+});
+
+//////////////////////////
+//events
+
+$("#stopButton").click(function(){
+	// startingSource.stop();
+	startingSource.playbackRate.value = 0;
+	console.log(startingSource);
+	clearInterval(bpmIntverval);
 });
