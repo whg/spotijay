@@ -1,3 +1,4 @@
+
 var context;
 var contextClass = (window.AudioContext || 
         window.webkitAudioContext || 
@@ -11,7 +12,7 @@ if (contextClass) {
     // Web Audio API is not available. Ask the user to use a supported browser.
 }
 var bufferLoader;
-var bpmIntverval = null;
+var bpmInterval = null;
 
 function Track() {
 	this.source = null;
@@ -34,16 +35,42 @@ function loadInTrackData(track, data) {
     track.data = data;
 }
 
-function finishedLoadingStart(buffer) {
+function cueNextTrack() {
+	
+}
 
-    currentTrack.source = context.createBufferSource();
-    currentTrack.source.buffer = buffer;
-    currentTrack.source.connect(context.destination);
-    currentTrack.source.start(0);
-    currentTrack.source.playbackRate = 1;
-    currentTrack.startingTime = context.currentTime;
-	currentTrack.source.loop = true;
+function play(souce, startTime, offset, duration) {
 
+
+
+  // startTime = context.currentTime;
+  var source = context.createBufferSource();
+  // Connect graph
+  source.buffer = souce.buffer;
+  // source.loop = true;
+  source.connect(context.destination);
+  // Start playback, but make sure we stay in bound of the buffer.
+  
+  // currentTrack.startingTime = context.currentTime;
+  source.start(startTime, offset, duration);
+
+  if(souce) souce.stop(0);
+
+  souce = null;
+  souce = source;
+  
+
+}
+
+function go() {
+	
+    // currentTrack.source.start(0);
+    // currentTrack.source.connect(context.destination);
+    // currentTrack.source.backRate = 1;
+    // currentTrack.startingTime = context.currentTime;
+	
+	// play(currentTrack.source, 0, currentTrack.data.beats[0].start);
+	
     var gainNode = context.createGain();
     currentTrack.source.connect(gainNode); // Connect sine wave to gain node
     gainNode.connect(context.destination); // Connect gain node to speakers
@@ -56,18 +83,62 @@ function finishedLoadingStart(buffer) {
     // this is where the meat of the bpm shit lives
     ///////////////////////////////////////////////////////////
 
-    bpmIntverval = setInterval(function () {
-        if(!currentTrack.data || currentTrack.source.playbackRate === 0) return;
+	if(bpmInterval !== null) clearInterval(bpmInterval);
+	console.log(currentTrack.data.bars[1].duration);
+	
+	var eightbars = 0;
+	for(var i = 0; i < 4; i++) {
+		eightbars+= currentTrack.data.beats[0+i].duration;
+	}
+	
+	console.log("eightbars = " + eightbars);
+	
+    bpmInterval = setInterval(function () {
+        if(!currentTrack.data || currentTrack.source.backRate === 0) return;
 
-        var trackTime = context.currentTime-currentTrack.startingTime;
-
+		//         var trackTime = context.currentTime-currentTrack.startingTime;
+		// 
+		// var bar1 = currentTrack.data.beats[1];
+		// var bar8 = currentTrack.data.beats[3];
+		// // console.log(trackTime + " " + bar8.start + " diff = " + Math.abs(trackTime - (bar8.start + bar8.duration)));
+		// if (Math.abs(trackTime - (bar8.start)) < 0.01) {
+		//     // currentTrack.source.start(context.currentTime+bar1.start);
+		// 	currentTrack.source.stop();
+		// 	play(currentTrack.source.buffer, (bar8.start - bar1.start));
+		// 	console.log("looped");
+		// }
+		
+		// if(currentTrack.source) currentTrack.source.stop();
+		play(currentTrack.source, 0, currentTrack.data.beats[0].start, eightbars);
+		
+		
+		console.log("looped");
+		
+		if(nextTrack.source) {
+			console.log("there is a next track");
+			// nextTrack.source.stop();
+			play(nextTrack.source, 0, nextTrack.data.beats[0].start, eightbars);
+		}
+		
         // $("body").css("background-color", "#000");
-        currentTrack.data.beats.forEach(function(e) {
-            if(Math.abs(trackTime - e.start) < 0.1) {
-                // $("body").css("background-color", "#fff");
-            }
-        });
-    }, 20);
+        // currentTrack.data.bars.forEach(function(e) {
+        //     if(Math.abs(trackTime - e.start) < 0.1) {
+        //         // $("body").css("background-color", "#fff");
+        //     }
+        // });
+    }, eightbars*1000);
+	
+	
+}
+
+function finishedLoadingStart(buffer) {
+
+    currentTrack.source = context.createBufferSource();
+    currentTrack.source.buffer = buffer;
+    currentTrack.source.start(0);
+	// currentTrack.source.loop = true;
+	// go();
+
 
 }
 
@@ -77,6 +148,7 @@ function finishedLoadingStart(buffer) {
 
 $("#searchButton").click(function() {
     console.log("searching " + $("#search").val());
+
 
     $.get("https://api.spotify.com/v1/search", {
         q: $("#search").val(),
@@ -100,23 +172,31 @@ $("#searchButton").click(function() {
         $(".searchResultItem").click(function() {
             console.log($(this).attr("preview"));
 
-            var that = this;
-            getPreviewData($(this).attr("preview"), function(audioSummary, data) {
-                console.log("done callback");
-                currentTrack.data = data;
-                currentTrack.audioSummary = audioSummary;
+	            var that = this;
+	            getPreviewData($(this).attr("preview"), function(audioSummary, data) {
+	                console.log("done callback");
+	                currentTrack.data = data;
+	                currentTrack.audioSummary = audioSummary;
+	            
+	                currentTrack.spotifyTrackId = $(that).attr("id");
+	                currentTrack.spotifyArtistId = $(that).attr("artistId");			
+					
+					go();
+					
+	                getSimilarArtists(currentTrack);
+	            				
+	            });
+			
+			// currentTrack.data = glimpse;
 
-                currentTrack.spotifyTrackId = $(that).attr("id");
-                currentTrack.spotifyArtistId = $(that).attr("artistId");			
-                getSimilarArtists(currentTrack);
-            });
 
-
-
-            if(currentTrack.source) currentTrack.source.stop();
+			console.log(currentTrack.data );
+            // if(currentTrack.source) currentTrack.source.stop();
 
             bufferLoader = new BufferLoader(context, finishedLoadingStart);
             bufferLoader.load($(this).attr("preview"));
+			
+			
 
         });
 
@@ -129,7 +209,7 @@ $("#searchButton").click(function() {
 
 $("#stopButton").click(function(){
     // currentTrack.source.stop();
-    currentTrack.source.playbackRate.value = 0;
+    currentTrack.source.backRate.value = 0;
     console.log(currentTrack.source);
     clearInterval(bpmIntverval);
     console.log(currentTrack.audioSummary);
@@ -139,4 +219,18 @@ $("#search").keydown(function(event) {
     if(event.keyCode == 13) {
         $("#searchButton").click();
     }
-})
+});
+
+$("#searchButton").click();
+
+
+// $("body").mousedown(function(event){
+// 	var time = event.pageX* 0.01;
+// 	console.log(time);
+// 	if(currentTrack.source) {
+// 		currentTrack.source.stop();
+// 		play(currentTrack.source.buffer, time);
+// 	}
+// 	
+// });
+

@@ -1,6 +1,8 @@
 var APIkey = "USFCOFHXTDXYNVRQ9";
 var APIkey2 = "GWBBEFRRPJGVCMBCL";
 
+// swapKeys();
+
 function swapKeys() {
     var temp = APIkey;
     APIkey = APIkey2;
@@ -17,13 +19,13 @@ function getPreviewData(previewURL, callback) {
 	
 		var id = uploadData.response.track.id;
 	
-		var purl = "http://developer.echonest.com/api/v4/track/profile?api_key="+APIkey2+"&format=json&id="+id+"&bucket=audio_summary"
+		var purl = "http://developer.echonest.com/api/v4/track/profile?api_key="+APIkey+"&format=json&id="+id+"&bucket=audio_summary"
 		console.log(purl);
 	
 		var stupidPendingInterval = setInterval(function () {
 	
 			$.get("http://developer.echonest.com/api/v4/track/profile", {
-				api_key: APIkey2,
+				api_key: APIkey,
 				format: "json",
 				id: id,
 				bucket: "audio_summary"
@@ -52,7 +54,7 @@ function getPreviewData(previewURL, callback) {
 							console.log("failed to get analysis data");
 							swapKeys();
 						});
-					}, 1000);
+					}, 5);
 				
 				}
 				else {
@@ -140,31 +142,12 @@ function getSimilarArtists(track) {
 }
 
 function playNextTrack(buffer) {
-	
-	currentTrack.source.stop();
-	currentTrack = nextTrack;
-	
-    currentTrack.source = context.createBufferSource();
-    currentTrack.source.buffer = buffer;
-    currentTrack.source.connect(context.destination);
-    currentTrack.source.start(0);
-    currentTrack.source.playbackRate = 1;
-    currentTrack.startingTime = context.currentTime;
+    	
+    nextTrack.source = context.createBufferSource();
+    nextTrack.source.buffer = buffer;
+    nextTrack.source.connect(context.destination);
+    nextTrack.source.start(0);
+    nextTrack.source.playbackRate = 1;
+    nextTrack.startingTime = context.currentTime;
 
-    ///////////////////////////////////////////////////////////
-    // this is where the meat of the bpm shit lives
-    ///////////////////////////////////////////////////////////
-
-    bpmIntverval = setInterval(function () {
-        if(!currentTrack.data || currentTrack.source.playbackRate === 0) return;
-
-        var trackTime = context.currentTime-currentTrack.startingTime;
-
-        // $("body").css("background-color", "#000");
-        currentTrack.data.beats.forEach(function(e) {
-            if(Math.abs(trackTime - e.start) < 0.1) {
-                // $("body").css("background-color", "#fff");
-            }
-        });
-    }, 20);
 }
