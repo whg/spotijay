@@ -130,7 +130,7 @@ function getSimilarArtists(track) {
                     log("choosing song number = " + index);
                     
 					// var searchData.response.songs[0].
-					var firstSong = searchData.response.songs[0];
+					var firstSong = searchData.response.songs[index];
 					var query  = encodeURI(firstSong.title + "+artist:" + firstSong.artist_name);
 					log("query = " + query);
 					$.get("https://api.spotify.com/v1/search?q=" + query + "&type=track").done(function(spotifySearchData){
