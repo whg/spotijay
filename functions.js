@@ -7,15 +7,15 @@ function addToMessages(text) {
     $("#messages").append("<p>" + text + "</p>");
 }
 
-function log(text) {
+function log(text, printregarless) {
     if(!text) return;
     
     console.log(text);
-    if(text.indexOf === undefined) {
+    if(text.indexOf === undefined ) {
         // addToMessages(JSON.stringify(text));
     }
     else {
-        if(text.indexOf("http") == -1) {
+        if(text.indexOf("http") == -1 || printregarless) {
            addToMessages(text);
         }
     }
@@ -70,6 +70,8 @@ function getPreviewData(previewURL, callback) {
 						}).fail(function(){
 							
 							log("failed to get analysis data");
+                            // log("<a href='" + purl + "'>CLICK HERE</a>", true);
+                            $("#link").html("<a href='" + purl + "'>CLICK HERE</a>");
 							swapKeys();
 						});
 					}, 5);
@@ -171,5 +173,8 @@ function playNextTrack(buffer) {
     nextTrack.source.connect(gainNode); // Connect sine wave to gain node
 	gainNode.gain.value = 0;
     gainNode.connect(context.destination);
+    
+	currentGainNode.gain.value = 1;
+	nextGainNode.gain.value = 0;
 
 }

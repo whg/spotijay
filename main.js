@@ -48,6 +48,43 @@ function cueNextTrack() {
 
 var nbarsTogether = 0;
 var PLAY_TOGETHER = 4;
+var crossfadeInterval = null;
+var crossfadeTime = 0;
+
+
+
+function fade(way, crossfadeLength) {
+	var invervalLength = 50;
+	crossfadeInterval = setInterval(function () {
+		
+		var percent =  crossfadeTime / crossfadeLength;
+		
+		// Use an equal-power crossfading curve:
+		if(way === "in") {
+			var gain1 = 1; //Math.cos(percent * 0.5*Math.PI);
+			var gain2 = Math.cos((1.0 - percent) * 0.5*Math.PI);
+		}
+		else if(way == "out") {
+			var gain2 = 1; //Math.cos(percent * 0.5*Math.PI);
+			var gain1 = 1.0 - (Math.cos((1.0 - percent) * 0.5*Math.PI));
+		}
+		
+		currentGainNode.gain.value = gain1;
+		nextGainNode.gain.value = gain2;
+		crossfadeTime+= invervalLength;
+		
+		log("currentGain = " + gain1 + ", nextGain = " + gain2);
+		
+	}, invervalLength);
+	
+	setTimeout(function () {
+		clearInterval(crossfadeInterval);
+		crossfadeTime = 0;
+		currentGainNode.gain.value = 1;
+		nextGainNode.gain.value = 1;
+	}, crossfadeLength);
+}
+
 
 function play(souce, startTime, offset, duration, gain) {
 
@@ -75,16 +112,6 @@ function play(souce, startTime, offset, duration, gain) {
 
 function go() {
 	
-    // currentTrack.source.start(0);
-    // currentTrack.source.connect(context.destination);
-    // currentTrack.source.backRate = 1;
-    // currentTrack.startingTime = context.currentTime;
-	
-	// play(currentTrack.source, 0, currentTrack.data.beats[0].start);
-	
-    // var gainNode = context.createGain();
-    // currentTrack.source.connect(gainNode); // Connect sine wave to gain node
-    // gainNode.connect(context.destination); // Connect gain node to speakers
 
     document.getElementById('volume').addEventListener('change', function () {
         gainNode.gain.value = this.value;
@@ -107,41 +134,37 @@ function go() {
     bpmInterval = setInterval(function () {
         if(!currentTrack.data || currentTrack.source.backRate === 0) return;
 
-		//         var trackTime = context.currentTime-currentTrack.startingTime;
-		// 
-		// var bar1 = currentTrack.data.beats[1];
-		// var bar8 = currentTrack.data.beats[3];
-		// // log(trackTime + " " + bar8.start + " diff = " + Math.abs(trackTime - (bar8.start + bar8.duration)));
-		// if (Math.abs(trackTime - (bar8.start)) < 0.01) {
-		//     // currentTrack.source.start(context.currentTime+bar1.start);
-		// 	currentTrack.source.stop();
-		// 	play(currentTrack.source.buffer, (bar8.start - bar1.start));
-		// 	log("looped");
-		// }
-		
 		// if(currentTrack.source) currentTrack.source.stop();
 		play(currentTrack.source, 0, currentTrack.data.bars[0].start, eightbars, currentGainNode);
 	    // currentTrack.source.connect(currentTrack.gainNode);
 		
-		
 		log("looped");
+		
+		log("currentGain = " + currentGainNode.gain.value + ", nextGain = " + nextGainNode.gain.value);
+		
 		
 		if(nextTrack.source) {
 			log("there is a next track");
 			// nextTrack.source.stop();
+			
+			if(nbarsTogether == 0) {
+				fade("in", 3500);
+			}
+			else if (nbarsTogether == PLAY_TOGETHER-1) {
+				fade("out", 3500);	
+			}
 			play(nextTrack.source, 0, nextTrack.data.bars[0].start, eightbars, nextGainNode);
 			// nextTrack.source.connect(nextTrack.gainNode);
 			
 			
-			
-			var percent = nbarsTogether / PLAY_TOGETHER;
-			// Use an equal-power crossfading curve:
-			var gain1 = Math.cos(percent * 0.5*Math.PI);
-			var gain2 = Math.cos((1.0 - percent) * 0.5*Math.PI);
-			currentGainNode.gain.value = gain1;
-			nextGainNode.gain.value = gain2;
-			
-			log("currentGain = " + gain1 + ", nextGain = " + gain2);
+						// 
+			// var percent = nbarsTogether / PLAY_TOGETHER;
+			// // Use an equal-power crossfading curve:
+			// var gain1 = Math.cos(percent * 0.5*Math.PI);
+			// var gain2 = Math.cos((1.0 - percent) * 0.5*Math.PI);
+			// currentGainNode.gain.value = gain1;
+			// nextGainNode.gain.value = gain2;
+			// 
 			
 			nbarsTogether++;
 			
@@ -151,9 +174,11 @@ function go() {
 				nextTrack = new Track();
                 getSimilarArtists(currentTrack);
 				nbarsTogether = 0;
-				
 				currentGainNode.gain.value = 1;
-				nextGainNode.gain.value = 0;
+				nextGainNode.gain.value = 1;
+				
+				log("SETTT currentGain = " + currentGainNode.gain.value + ", nextGain = " + nextGainNode.gain.value);
+				
 				
 			}
 		}
@@ -267,6 +292,9 @@ $("#search").keydown(function(event) {
 
 $("#searchButton").click();
 
+$("#link").click(function() {
+	$(this).html("");
+})
 
 // $("body").mousedown(function(event){
 // 	var time = event.pageX* 0.01;

@@ -69,3 +69,15 @@ li:hover {
     margin-right: 10px;
     color: #aadddd;
 }
+
+a {
+    color: #ff0000;
+}
+
+#messages a {
+    margin: 0px;
+    padding: 0px;
+    margin-right: 10px;
+    color: #ff0000;
+    
+}
