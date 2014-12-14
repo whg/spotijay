@@ -1,5 +1,4 @@
 // Start off by initializing a new context.
-context = new webkitAudioContext();
 
 // shim layer with setTimeout fallback
 window.requestAnimFrame = (function(){
