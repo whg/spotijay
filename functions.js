@@ -38,10 +38,16 @@ function getPreviewData(previewURL, callback) {
 							callback(audioSummary, analysisData);
 							console.log(analysisData);
 							// console.log(JSON.stringify(data));
+							
+							clearInterval(stupidPendingInterval);
+							
+						}).fail(function(){
+							
+							console.log("failed to get analysis data");
+							
 						});
-					}, 10);
+					}, 100);
 				
-					clearInterval(stupidPendingInterval);
 				}
 				else {
 					console.log("still waiting...");
@@ -99,11 +105,12 @@ function getSimilarArtists(track) {
 						console.log("spotifySearchData");
 						console.log(spotifySearchData);
 						
-						var url = spotifySearchData.tracks.items[0].preview_url;
+						var previewUrl = spotifySearchData.tracks.items[0].preview_url;
 						var spotifyTrackId = spotifySearchData.tracks.items[0].id;
 						var spotifyArtistId = spotifySearchData.tracks.items[0].artists[0].id;
+			            
 						
-						getPreviewData(url, function(audioSummary, data) {
+						getPreviewData(previewUrl, function(audioSummary, data) {
 							console.log("done callback");
 							nextTrack.data = data;
 							nextTrack.audioSummary = audioSummary;
@@ -112,6 +119,10 @@ function getSimilarArtists(track) {
 							
 							console.log("WE HAVE TWO TRACKS!!!!");
 							// getSimilarArtists(nextTrack);
+							
+							bufferLoader = new BufferLoader(context, playNextTrack);
+				            bufferLoader.load(previewUrl);
+							
 						});
 						
 					});
@@ -121,4 +132,34 @@ function getSimilarArtists(track) {
 			
 		}
 	});
+}
+
+function playNextTrack(buffer) {
+	
+	currentTrack.source.stop();
+	currentTrack = nextTrack;
+	
+    currentTrack.source = context.createBufferSource();
+    currentTrack.source.buffer = buffer;
+    currentTrack.source.connect(context.destination);
+    currentTrack.source.start(0);
+    currentTrack.source.playbackRate = 1;
+    currentTrack.startingTime = context.currentTime;
+
+    ///////////////////////////////////////////////////////////
+    // this is where the meat of the bpm shit lives
+    ///////////////////////////////////////////////////////////
+
+    bpmIntverval = setInterval(function () {
+        if(!currentTrack.data || currentTrack.source.playbackRate === 0) return;
+
+        var trackTime = context.currentTime-currentTrack.startingTime;
+
+        // $("body").css("background-color", "#000");
+        currentTrack.data.beats.forEach(function(e) {
+            if(Math.abs(trackTime - e.start) < 0.1) {
+                // $("body").css("background-color", "#fff");
+            }
+        });
+    }, 20);
 }

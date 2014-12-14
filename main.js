@@ -11,10 +11,10 @@ if (contextClass) {
     // Web Audio API is not available. Ask the user to use a supported browser.
 }
 var bufferLoader;
-var startingSource = null;
 var bpmIntverval = null;
 
 function Track() {
+	this.source = null;
     this.startingTime = 0;
     this.data = null;
     this.artistId = "";
@@ -36,20 +36,19 @@ function loadInTrackData(track, data) {
 
 function finishedLoadingStart(buffer) {
 
-    startingSource = context.createBufferSource();
-    startingSource.buffer = buffer;
-    startingSource.connect(context.destination);
-    startingSource.start(0);
-    startingSource.playbackRate = 1;
+    currentTrack.source = context.createBufferSource();
+    currentTrack.source.buffer = buffer;
+    currentTrack.source.connect(context.destination);
+    currentTrack.source.start(0);
+    currentTrack.source.playbackRate = 1;
     currentTrack.startingTime = context.currentTime;
-
 
     ///////////////////////////////////////////////////////////
     // this is where the meat of the bpm shit lives
     ///////////////////////////////////////////////////////////
 
     bpmIntverval = setInterval(function () {
-        if(!currentTrack.data || startingSource.playbackRate === 0) return;
+        if(!currentTrack.data || currentTrack.source.playbackRate === 0) return;
 
         var trackTime = context.currentTime-currentTrack.startingTime;
 
@@ -105,10 +104,10 @@ $("#searchButton").click(function() {
 
 
 
-            if(startingSource) startingSource.stop();
+            if(currentTrack.source) currentTrack.source.stop();
 
             bufferLoader = new BufferLoader(context, finishedLoadingStart);
-            bufferLoader.load( $(this).attr("preview"));
+            bufferLoader.load($(this).attr("preview"));
 
         });
 
@@ -120,9 +119,9 @@ $("#searchButton").click(function() {
 //events
 
 $("#stopButton").click(function(){
-    // startingSource.stop();
-    startingSource.playbackRate.value = 0;
-    console.log(startingSource);
+    // currentTrack.source.stop();
+    currentTrack.source.playbackRate.value = 0;
+    console.log(currentTrack.source);
     clearInterval(bpmIntverval);
     console.log(currentTrack.audioSummary);
 });
