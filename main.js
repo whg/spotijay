@@ -25,6 +25,7 @@ function Track() {
 
 var currentTrack = new Track();
 var nextTrack = new Track();
+var filter = context.createBiquadFilter();
 
 
 ////////////////////////////////////////////////
@@ -34,22 +35,39 @@ function loadInTrackData(track, data) {
     track.data = data;
 }
 
+function toggleFilter() {
+    if (filtering) {
+        // stop filter
+    } else { 
+        // start filter
+    };
+}
+
 function finishedLoadingStart(buffer) {
 
     currentTrack.source = context.createBufferSource();
     currentTrack.source.buffer = buffer;
-    currentTrack.source.connect(context.destination);
+    //currentTrack.source.connect(context.destination);
     currentTrack.source.start(0);
     currentTrack.source.playbackRate = 1;
     currentTrack.startingTime = context.currentTime;
 	currentTrack.source.loop = true;
 
+    filter.type = 'highpass';
+    filter.frequency.value = 400;
+
+    currentTrack.source.connect(filter); // Connect sine wave to gain node
+
     var gainNode = context.createGain();
-    currentTrack.source.connect(gainNode); // Connect sine wave to gain node
+    gainNode.gain.value = 0.5;
+    filter.connect(gainNode);
     gainNode.connect(context.destination); // Connect gain node to speakers
 
     document.getElementById('volume').addEventListener('change', function () {
         gainNode.gain.value = this.value;
+    });
+    document.getElementById('eq').addEventListener('change', function () {
+        filter.frequency.value = this.value;
     });
 
     ///////////////////////////////////////////////////////////
