@@ -1,3 +1,4 @@
+// Start off by initializing a new context.
 
 // shim layer with setTimeout fallback
 window.requestAnimFrame = (function(){
