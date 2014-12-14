@@ -1,6 +1,12 @@
 var APIkey = "USFCOFHXTDXYNVRQ9";
 var APIkey2 = "GWBBEFRRPJGVCMBCL";
 
+function swapKeys() {
+    var temp = APIkey;
+    APIkey = APIkey2;
+    APIkey2 = temp;
+}
+
 function getPreviewData(previewURL, callback) {
 	var goodURL = previewURL.replace("https", "http");
 	
@@ -44,9 +50,9 @@ function getPreviewData(previewURL, callback) {
 						}).fail(function(){
 							
 							console.log("failed to get analysis data");
-							
+							swapKeys();
 						});
-					}, 100);
+					}, 1000);
 				
 				}
 				else {
@@ -97,11 +103,7 @@ function getSimilarArtists(track) {
 					var firstSong = searchData.response.songs[0];
 					var query  = encodeURI(firstSong.title + "+artist:" + firstSong.artist_name);
 					console.log("query = " + query);
-					$.get("https://api.spotify.com/v1/search?q=" + query + "&type=track", {
-					// $.get("https://api.spotify.com/v1/search", {
-					// 	q: query,
-					// 	type: "track"
-					}).done(function(spotifySearchData){
+					$.get("https://api.spotify.com/v1/search?q=" + query + "&type=track").done(function(spotifySearchData){
 						console.log("spotifySearchData");
 						console.log(spotifySearchData);
 						
@@ -126,7 +128,10 @@ function getSimilarArtists(track) {
 						});
 						
 					});
-				}
+				} 
+                else {
+                    console.log("no similar match found!!!");
+                }
 				
 			});
 			

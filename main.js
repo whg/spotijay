@@ -42,9 +42,10 @@ function finishedLoadingStart(buffer) {
     currentTrack.source.start(0);
     currentTrack.source.playbackRate = 1;
     currentTrack.startingTime = context.currentTime;
+	currentTrack.source.loop = true;
 
     var gainNode = context.createGain();
-    startingSource.connect(gainNode); // Connect sine wave to gain node
+    currentTrack.source.connect(gainNode); // Connect sine wave to gain node
     gainNode.connect(context.destination); // Connect gain node to speakers
 
     document.getElementById('volume').addEventListener('change', function () {
