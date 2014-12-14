@@ -117,6 +117,9 @@ function go() {
         gainNode.gain.value = this.value;
     });
 
+	currentGainNode.gain.value = 1;
+	nextGainNode.gain.value = 1;
+	
     ///////////////////////////////////////////////////////////
     // this is where the meat of the bpm shit lives
     ///////////////////////////////////////////////////////////
@@ -138,9 +141,8 @@ function go() {
 		play(currentTrack.source, 0, currentTrack.data.bars[0].start, eightbars, currentGainNode);
 	    // currentTrack.source.connect(currentTrack.gainNode);
 		
-		log("looped");
-		
-		log("currentGain = " + currentGainNode.gain.value + ", nextGain = " + nextGainNode.gain.value);
+		// log("looped");
+		// log("currentGain = " + currentGainNode.gain.value + ", nextGain = " + nextGainNode.gain.value);
 		
 		
 		if(nextTrack.source) {
@@ -195,6 +197,10 @@ function go() {
 }
 
 function finishedLoadingStart(buffer) {
+	
+	if(currentTrack.source) {
+		currentTrack.source.stop()
+	}
 
     currentTrack.source = context.createBufferSource();
     currentTrack.source.buffer = buffer;

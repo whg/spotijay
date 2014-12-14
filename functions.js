@@ -119,8 +119,16 @@ function getSimilarArtists(track) {
 				
 				log("searchData");
 				log(searchData);
+                
+                log("num results = " + searchData.response.songs.length);
 				
+                
+                
 				if(searchData.response.songs.length > 0) {
+                    
+                    var index = Math.floor(Math.random()*searchData.response.songs.length);
+                    log("choosing song number = " + index);
+                    
 					// var searchData.response.songs[0].
 					var firstSong = searchData.response.songs[0];
 					var query  = encodeURI(firstSong.title + "+artist:" + firstSong.artist_name);
