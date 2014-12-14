@@ -1,15 +1,29 @@
 <html>
+<head>
+	<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+	<title>index</title>
+	
+	<link rel="stylesheet" href="style.css" type="text/css" media="screen" title="no title" charset="utf-8">
+	
+</head>
+<body id="index" onload="">
+	<div id="messages">
+		<p>thhis is something</p>
+		<p>again</p>
+		<p>twice</p>
+	</div>
 
 <div id="main">
 	
-	<body id="index" onload="">
 		
 	
+		<div id="searchGroup">
+			<label for="search" class="searchText">Look for something:</label><input type="text" name="search" value="marco carola" id="search">
+			<button id="searchButton">Search</button>
+			
+		</div>
 	
-	<label for="search">Search</label><input type="text" name="search" value="tini" id="search">
-	<button id="searchButton">Search</button>
-	
-	<button id="stopButton">Stop</button>
+
 	
 	<div id="searchResults">
 		<ul>
@@ -20,7 +34,7 @@
 	<h1 id="a"></h1>
 	
     <input id="volume" type="range" min="-1" max="1" step="0.1" value="0.5"/>
-
+	<button id="stopButton">Stop</button>
 	</body>
 </div>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>

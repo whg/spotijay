@@ -102,7 +102,7 @@ BufferLoader.prototype.load = function(url) {
           return;
         }
         loader.buffer = buffer;
-		console.log("loaded buffer");
+		log("loaded buffer");
 		loader.onload(loader.buffer);
       },
       function(error) {
