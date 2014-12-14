@@ -43,6 +43,14 @@ function finishedLoadingStart(buffer) {
     currentTrack.source.playbackRate = 1;
     currentTrack.startingTime = context.currentTime;
 
+    var gainNode = context.createGain();
+    startingSource.connect(gainNode); // Connect sine wave to gain node
+    gainNode.connect(context.destination); // Connect gain node to speakers
+
+    document.getElementById('volume').addEventListener('change', function () {
+        gainNode.gain.value = this.value;
+    });
+
     ///////////////////////////////////////////////////////////
     // this is where the meat of the bpm shit lives
     ///////////////////////////////////////////////////////////
